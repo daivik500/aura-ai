@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aura AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:#0b1220;
+  color:#e5f2ff;
+  display:flex;
+  height:100vh;
+}
+#sidebar{
+  width:260px;
+  background:#111a2e;
+  padding:20px;
+}
+.menu-btn{
+  padding:12px;
+  margin-top:12px;
+  background:#1a2645;
+  border-radius:8px;
+  cursor:pointer;
+  text-align:center;
+}
+.menu-btn:hover{background:#2563eb}
+#main{
+  flex:1;
+  padding:20px;
+  overflow-y:auto;
+}
+.box{display:none}
+.msg{margin:10px 0;padding:10px;border-radius:6px;font-size:14px}
+.user{background:#2563eb;text-align:right}
+.ai{background:#1e293b}
+input{width:100%;padding:12px;margin-top:10px;border-radius:6px;border:none}
+button{width:100%;padding:12px;margin-top:10px;background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer}
+#adBox{margin-bottom:15px;padding:15px;border:1px dashed #2563eb;text-align:center;color:#93c5fd}
+.sidebar-links a{color:#93c5fd;display:block;margin-top:6px;text-decoration:none;font-size:14px}
+</style>
+
+<script>
+/* 🔑 REPLACE WITH YOUR OPENROUTER API KEY */
+const API_KEY = "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";
+const MODEL = "openai/gpt-4o-mini";
+
+function showBox(id){
+  document.querySelectorAll('.box').forEach(b=>b.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+
+function addMsg(box,text,type){
+  const d=document.createElement('div');
+  d.className='msg '+type;
+  d.innerText=text;
+  box.appendChild(d);
+}
+
+async function ask(inputId, boxId, role){
+  const input=document.getElementById(inputId);
+  const box=document.getElementById(boxId);
+  if(!input.value) return;
+
+  const q=input.value;
+  input.value="";
+  addMsg(box,q,'user');
+
+  try{
+    const res=await fetch("https://openrouter.ai/api/v1/chat/completions",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer "+API_KEY
+      },
+      body:JSON.stringify({
+        model:MODEL,
+        messages:[
+          {role:"system",content:role},
+          {role:"user",content:q}
+        ]
+      })
+    });
+    const data=await res.json();
+    addMsg(box,data.choices[0].message.content,'ai');
+  }catch(e){
+    addMsg(box,"API Error. Check API key.",'ai');
+  }
+}
+</script>
+</head>
+<body onload="showBox('chat')">
+
+<div id="sidebar">
+  <h2 style="text-align:center">AURA AI</h2>
+
+  <div class="menu-btn" onclick="showBox('chat')">🤖 AI Chat</div>
+  <div class="menu-btn" onclick="showBox('youtube')">📺 YouTube Growth</div>
+  <div class="menu-btn" onclick="showBox('cricket')">🏏 Cricket Ideas</div>
+  <div class="menu-btn" onclick="showBox('startup')">🚀 Startup Ideas</div>
+
+  <hr style="border-color:#1a2645;margin-top:20px">
+
+  <div class="sidebar-links">
+    <a href="about.html">About</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</div>
+
+<div id="main">
+
+<div id="adBox">📢 Google AdSense Space</div>
+
+<div class="box" id="chat">
+  <h2>AI Chat</h2>
+  <div id="chatBox"></div>
+  <input id="chatInput" placeholder="Ask anything...">
+  <button onclick="ask('chatInput','chatBox','You are a helpful AI assistant.')">Ask</button>
+</div>
+
+<div class="box" id="youtube">
+  <h2>YouTube Growth AI</h2>
+  <div id="ytBox"></div>
+  <input id="ytInput" placeholder="How to grow a YouTube channel?">
+  <button onclick="ask('ytInput','ytBox','You are a YouTube growth expert.')">Generate</button>
+</div>
+
+<div class="box" id="cricket">
+  <h2>Cricket Ideas AI</h2>
+  <div id="crBox"></div>
+  <input id="crInput" placeholder="Cricket video idea">
+  <button onclick="ask('crInput','crBox','You are a cricket analyst and content creator.')">Generate</button>
+</div>
+
+<div class="box" id="startup">
+  <h2>Startup & Business AI</h2>
+  <div id="stBox"></div>
+  <input id="stInput" placeholder="Startup idea for India">
+  <button onclick="ask('stInput','stBox','You are a startup mentor and business strategist.')">Generate</button>
+</div>
+
+</div>
+
+</body>
+</html>
